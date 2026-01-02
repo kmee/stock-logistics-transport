@@ -4,6 +4,7 @@
     <record id="demo_depot_location" model="res.partner">
         <field name="name">Depósito Central - São Paulo</field>
         <field name="is_company">True</field>
+        <field name="tms_location">True</field>
         <field name="street">Av. Paulista, 1000</field>
         <field name="city">São Paulo</field>
         <field name="zip">01310-100</field>
@@ -105,7 +106,7 @@
     <record id="demo_tms_order_with_stops_1" model="tms.order">
         <field name="name">ORD-DEMO-001</field>
         <field name="tms_team_id" ref="tms.demo_team_1" />
-        <field name="depot_location_id" ref="demo_depot_location" />
+        <field name="origin_id" ref="demo_depot_location" />
     </record>
 
     <record id="demo_tms_order_stop_1" model="tms.order.stop">
@@ -159,7 +160,7 @@
     <record id="demo_tms_order_with_stops_2" model="tms.order">
         <field name="name">ORD-DEMO-002</field>
         <field name="tms_team_id" ref="tms.demo_team_2" />
-        <field name="depot_location_id" ref="demo_depot_location" />
+        <field name="origin_id" ref="demo_depot_location" />
     </record>
 
     <record id="demo_tms_order_stop_4" model="tms.order.stop">

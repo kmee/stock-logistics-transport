@@ -1,10 +1,18 @@
 from odoo import api, fields, models
+from odoo.exceptions import UserError
 
 
 class TMSOrderStop(models.Model):
     _name = "tms.order.stop"
     _description = "TMS Order Delivery Stop"
     _order = "order_id, sequence"
+
+    company_id = fields.Many2one(
+        "res.company",
+        string="Company",
+        required=True,
+        default=lambda self: self.env.company,
+    )
 
     order_id = fields.Many2one(
         "tms.order",
@@ -49,7 +57,7 @@ class TMSOrderStop(models.Model):
     @api.model
     def _default_unloading_time(self):
         """Get default unloading time from company"""
-        company = self.env.company
+        company = self.company_id
         return company.tms_default_unloading_time or 30.0
 
     scheduled_date = fields.Datetime(
@@ -121,3 +129,164 @@ class TMSOrderStop(models.Model):
             else:
                 stop.address_complete = ""
                 stop.display_address = ""
+
+    def action_open_google_maps(self):
+        """
+        Open Google Maps in a new tab with route for a single stop.
+        Uses the stop's order to get all stops for the route.
+        Considers origin_id and destination_id from the order.
+
+        Returns:
+            dict: Action to open Google Maps URL
+        """
+        self.ensure_one()
+        if not self.order_id:
+            raise UserError("Stop must be linked to an order.")
+
+        # Get origin coordinates from order.origin_id if available
+        origin_coords = None
+        if (
+            self.order_id.origin_id
+            and self.order_id.origin_id.partner_latitude
+            and self.order_id.origin_id.partner_longitude
+        ):
+            origin_coords = (
+                self.order_id.origin_id.partner_latitude,
+                self.order_id.origin_id.partner_longitude,
+            )
+
+        # Get destination coordinates from order.destination_id if available
+        destination_coords = None
+        if (
+            self.order_id.destination_id
+            and self.order_id.destination_id.partner_latitude
+            and self.order_id.destination_id.partner_longitude
+        ):
+            destination_coords = (
+                self.order_id.destination_id.partner_latitude,
+                self.order_id.destination_id.partner_longitude,
+            )
+
+        # Collect stop coordinates
+        stop_coordinates = []
+        for stop in self.order_id.stop_ids.sorted("sequence"):
+            if stop.latitude and stop.longitude:
+                stop_coordinates.append((stop.latitude, stop.longitude))
+
+        url = self._generate_google_maps_url(
+            stop_coordinates, origin_coords, destination_coords
+        )
+        if not url:
+            raise UserError("Could not generate Google Maps URL.")
+
+        return {
+            "type": "ir.actions.act_url",
+            "url": url,
+            "target": "new",
+        }
+
+    def action_open_google_maps_multi(self):
+        """
+        Open Google Maps in a new tab with route for multiple selected stops.
+        Considers origin_id and destination_id from the order if available.
+
+        Returns:
+            dict: Action to open Google Maps URL
+        """
+        # Get origin coordinates from order.origin_id if available
+        origin_coords = None
+        destination_coords = None
+
+        # Try to get order from first stop
+        order = self[0].order_id if self and self[0].order_id else None
+        if order:
+            if (
+                order.origin_id
+                and order.origin_id.partner_latitude
+                and order.origin_id.partner_longitude
+            ):
+                origin_coords = (
+                    order.origin_id.partner_latitude,
+                    order.origin_id.partner_longitude,
+                )
+            if (
+                order.destination_id
+                and order.destination_id.partner_latitude
+                and order.destination_id.partner_longitude
+            ):
+                destination_coords = (
+                    order.destination_id.partner_latitude,
+                    order.destination_id.partner_longitude,
+                )
+
+        # Collect stop coordinates
+        stop_coordinates = []
+        for stop in self.sorted("sequence"):
+            if stop.latitude and stop.longitude:
+                stop_coordinates.append((stop.latitude, stop.longitude))
+
+        url = self._generate_google_maps_url(
+            stop_coordinates, origin_coords, destination_coords
+        )
+        if not url:
+            raise UserError("Could not generate Google Maps URL.")
+
+        return {
+            "type": "ir.actions.act_url",
+            "url": url,
+            "target": "new",
+        }
+
+    @staticmethod
+    def _generate_google_maps_url(
+        stop_coordinates, origin_coords=None, destination_coords=None
+    ):
+        """
+        Generate Google Maps URL for a route with waypoints.
+
+        Args:
+            stop_coordinates: List of (latitude, longitude) tuples for stops
+            origin_coords: Optional tuple (lat, lon) for origin location
+            destination_coords: Optional tuple (lat, lon) for destination location
+
+        Returns:
+            Google Maps URL string or None if insufficient coordinates
+        """
+        # Determine origin
+        if origin_coords:
+            origin = f"{origin_coords[0]},{origin_coords[1]}"
+        elif stop_coordinates:
+            origin = f"{stop_coordinates[0][0]},{stop_coordinates[0][1]}"
+        else:
+            return None
+
+        # Determine destination
+        if destination_coords:
+            destination = f"{destination_coords[0]},{destination_coords[1]}"
+        elif stop_coordinates:
+            destination = f"{stop_coordinates[-1][0]},{stop_coordinates[-1][1]}"
+        else:
+            return None
+
+        # Build waypoints (all stops if origin/destination are from order,
+        # otherwise stops between first and last)
+        waypoints = []
+        if origin_coords or destination_coords:
+            # Origin or destination is from order, all stops are waypoints
+            for lat, lon in stop_coordinates:
+                waypoints.append(f"{lat},{lon}")
+        else:
+            # Fallback: use stops between first and last as waypoints
+            for lat, lon in stop_coordinates[1:-1]:
+                waypoints.append(f"{lat},{lon}")
+
+        waypoints_str = "|".join(waypoints) if waypoints else ""
+
+        url = (
+            f"https://www.google.com/maps/dir/?api=1"
+            f"&origin={origin}&destination={destination}"
+        )
+        if waypoints_str:
+            url += f"&waypoints={waypoints_str}"
+
+        return url

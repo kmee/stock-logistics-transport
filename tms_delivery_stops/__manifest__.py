@@ -15,12 +15,13 @@
     "data": [
         "security/ir.model.access.csv",
         "views/res_config_settings.xml",
+        "views/tms_stage.xml",
         "views/tms_order_stop.xml",
         "views/tms_order.xml",
         "views/tms_team.xml",
     ],
     "demo": [
-        "data/demo_data.xml",
+        "demo/demo_data.xml",
     ],
     "installable": True,
     "application": False,

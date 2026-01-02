@@ -14,6 +14,14 @@
                         <field name="total_volume" />
                         <field name="estimated_total_time" />
                     </group>
+                    <group>
+                        <field
+                            name="google_maps_url"
+                            widget="url"
+                            string="View Route on Google Maps"
+                            readonly="1"
+                        />
+                    </group>
                 </group>
                 <notebook>
                     <page string="Stops" name="stops">

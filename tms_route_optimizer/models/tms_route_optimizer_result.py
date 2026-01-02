@@ -56,9 +56,6 @@ class TMSRouteOptimizerResult(models.TransientModel):
     google_maps_url = fields.Char(
         string="Google Maps URL",
     )
-    waze_url = fields.Char(
-        string="Waze URL",
-    )
     route_sequence = fields.Text(
         string="Route Sequence (JSON)",
     )

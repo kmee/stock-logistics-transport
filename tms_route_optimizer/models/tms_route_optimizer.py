@@ -287,14 +287,11 @@ class TMSRouteOptimizer(models.TransientModel):
         )
 
     def _add_map_urls_to_result(self, result, route, locations):
-        """Add Google Maps and Waze URLs to result"""
+        """Add Google Maps URL to result"""
         route_coords = [locations[node] for node in route["route"]]
         result.google_maps_url = RouteOptimizerHelper.generate_google_maps_url(
             route_coords
         )
-        if route_coords:
-            last_lat, last_lon = route_coords[-1]
-            result.waze_url = RouteOptimizerHelper.generate_waze_url(last_lat, last_lon)
 
         result.route_sequence = json.dumps(
             [{"lat": lat, "lon": lon} for lat, lon in route_coords]

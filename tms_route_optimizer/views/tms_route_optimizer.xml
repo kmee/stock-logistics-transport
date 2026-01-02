@@ -35,29 +35,8 @@
                             <field name="date_to" />
                         </group>
                     </group>
-                    <group string="Delivery Stops">
-                        <field name="delivery_stop_ids" nolabel="1" colspan="4">
-                            <list>
-                                <field name="partner_id" />
-                                <field name="weight" />
-                                <field name="volume" />
-                                <field name="scheduled_date" />
-                            </list>
-                        </field>
-                    </group>
-                    <group string="Results" invisible="state not in ['done', 'error']">
-                        <group>
-                            <field name="total_cost" />
-                            <field name="total_distance" />
-                            <field name="total_vehicles_used" />
-                            <field name="optimization_time" />
-                        </group>
-                    </group>
-                    <group string="Error" invisible="state != 'error'">
-                        <field name="error_message" nolabel="1" colspan="4" />
-                    </group>
-                    <notebook invisible="state != 'done'">
-                        <page string="Routes" name="routes">
+                    <notebook pages="optimization_notebook">
+                        <page string="Routes" name="routes" invisible="state != 'done'">
                             <field name="result_ids" nolabel="1">
                                 <list>
                                     <field name="vehicle_id" />
@@ -70,9 +49,39 @@
                                     <field name="route_cost" />
                                 </list>
                             </field>
+                            <group
+                                name="results"
+                                invisible="state not in ['done', 'error']"
+                            >
+                                <group name="results_left">
+                                    <field name="total_cost" />
+                                    <field name="total_distance" />
+                                </group>
+                                <group name="results_right">
+                                    <field name="total_vehicles_used" />
+                                    <field name="optimization_time" />
+                                </group>
+                            </group>
                         </page>
-                        <page string="Raw Result" name="raw_result">
+                        <page string="Delivery Stops" name="delivery_stops">
+                            <field name="delivery_stop_ids" nolabel="1" colspan="4">
+                                <list>
+                                    <field name="partner_id" />
+                                    <field name="weight" />
+                                    <field name="volume" />
+                                    <field name="scheduled_date" />
+                                </list>
+                            </field>
+                        </page>
+                        <page
+                            string="Raw Result"
+                            name="raw_result"
+                            invisible="state != 'done'"
+                        >
                             <field name="optimization_result" nolabel="1" colspan="4" />
+                        </page>
+                        <page string="Error" name="error" invisible="state != 'error'">
+                            <field name="error_message" nolabel="1" colspan="4" />
                         </page>
                     </notebook>
                 </sheet>
@@ -130,7 +139,6 @@
                     <group string="Navigation">
                         <group>
                             <field name="google_maps_url" widget="url" />
-                            <field name="waze_url" widget="url" />
                         </group>
                     </group>
                     <group string="Stops">

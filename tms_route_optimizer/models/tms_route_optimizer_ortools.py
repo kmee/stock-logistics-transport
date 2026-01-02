@@ -15,7 +15,7 @@ class RouteOptimizerHelper:
     - Calculating distances between geographic coordinates (Haversine)
     - Generating distance matrices for multiple locations
     - Solving Vehicle Routing Problems (VRP) with capacity constraints
-    - Generating Google Maps and Waze navigation URLs
+    - Generating Google Maps navigation URLs
     """
 
     @staticmethod
@@ -266,19 +266,3 @@ class RouteOptimizerHelper:
             url += f"&waypoints={waypoints_str}"
 
         return url
-
-    @staticmethod
-    def generate_waze_url(latitude, longitude):
-        """
-        Generate Waze URL for a location.
-
-        Args:
-            latitude: Latitude coordinate
-            longitude: Longitude coordinate
-
-        Returns:
-            Waze navigation URL string or None if coordinates are invalid
-        """
-        if latitude is None or longitude is None:
-            return None
-        return f"https://waze.com/ul?ll={latitude},{longitude}&navigate=yes"

@@ -191,17 +191,6 @@ class TestRouteOptimizerHelper(unittest.TestCase):
                 coord_str, waypoints_str, f"Waypoint {coord_str} não encontrado na URL"
             )
 
-    def test_generate_waze_url_format(self):
-        """Test Waze URL generation format"""
-        url = RouteOptimizerHelper.generate_waze_url(-23.0, -46.0)
-        self.assertEqual(url, "https://waze.com/ul?ll=-23.0,-46.0&navigate=yes")
-
-    def test_generate_waze_url_none_for_none_coordinates(self):
-        """Test Waze URL returns None for None coordinates"""
-        self.assertIsNone(RouteOptimizerHelper.generate_waze_url(None, -46.0))
-        self.assertIsNone(RouteOptimizerHelper.generate_waze_url(-23.0, None))
-        self.assertIsNone(RouteOptimizerHelper.generate_waze_url(None, None))
-
     def test_solve_vrp_integration_small_instance(self):
         """Test VRP solving with small instance"""
         # Verifica se ortools está instalado

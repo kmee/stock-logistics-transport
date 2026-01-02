@@ -1,4 +1,4 @@
-from odoo import api, fields, models
+from odoo import _, api, fields, models
 from odoo.exceptions import UserError
 
 
@@ -141,7 +141,7 @@ class TMSOrderStop(models.Model):
         """
         self.ensure_one()
         if not self.order_id:
-            raise UserError("Stop must be linked to an order.")
+            raise UserError(_("Stop must be linked to an order."))
 
         # Get origin coordinates from order.origin_id if available
         origin_coords = None
@@ -177,7 +177,7 @@ class TMSOrderStop(models.Model):
             stop_coordinates, origin_coords, destination_coords
         )
         if not url:
-            raise UserError("Could not generate Google Maps URL.")
+            raise UserError(_("Could not generate Google Maps URL."))
 
         return {
             "type": "ir.actions.act_url",
@@ -229,7 +229,7 @@ class TMSOrderStop(models.Model):
             stop_coordinates, origin_coords, destination_coords
         )
         if not url:
-            raise UserError("Could not generate Google Maps URL.")
+            raise UserError(_("Could not generate Google Maps URL."))
 
         return {
             "type": "ir.actions.act_url",

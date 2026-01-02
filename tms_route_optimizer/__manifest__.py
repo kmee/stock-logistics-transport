@@ -6,6 +6,7 @@
     "author": "KMEE, Odoo Community Association (OCA)",
     "website": "https://github.com/OCA/stock-logistics-transport",
     "license": "AGPL-3",
+    "maturity": "beta",
     "depends": [
         "tms",
         "tms_delivery_stops",

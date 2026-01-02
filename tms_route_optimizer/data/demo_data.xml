@@ -111,7 +111,11 @@
             ref('tms_vehicle_capacity.fleet_vehicle_type_vuc')
         ])]"
         />
-        <field name="default_depot_location_id" ref="demo_depot_location_optimizer" />
+        <field name="default_origin_location_id" ref="demo_depot_location_optimizer" />
+        <field
+            name="default_destination_location_id"
+            ref="demo_depot_location_optimizer"
+        />
     </record>
 
     <!-- Demo Vehicle Brand and Model -->
@@ -137,7 +141,6 @@
         <field name="volume_capacity">10</field>
         <field name="cost_per_km">2.50</field>
         <field name="minimum_trip_cost">50.00</field>
-        <field name="depot_location_id" ref="demo_depot_location_optimizer" />
         <field name="tms_team_id" ref="demo_team_route_optimizer" />
     </record>
 
@@ -152,7 +155,6 @@
         <field name="volume_capacity">10</field>
         <field name="cost_per_km">2.50</field>
         <field name="minimum_trip_cost">50.00</field>
-        <field name="depot_location_id" ref="demo_depot_location_optimizer" />
         <field name="tms_team_id" ref="demo_team_route_optimizer" />
     </record>
 
@@ -160,7 +162,8 @@
     <record id="demo_tms_order_optimizer_1" model="tms.order">
         <field name="name">ORD-OPT-001</field>
         <field name="tms_team_id" ref="demo_team_route_optimizer" />
-        <field name="depot_location_id" ref="demo_depot_location_optimizer" />
+        <field name="origin_id" ref="demo_depot_location_optimizer" />
+        <field name="destination_id" ref="demo_depot_location_optimizer" />
     </record>
 
     <!-- Demo TMS Order Stops for Route Optimizer -->

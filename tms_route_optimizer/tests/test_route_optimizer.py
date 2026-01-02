@@ -62,7 +62,8 @@ class TestRouteOptimizer(TransactionCase):
             }
         )
 
-        cls.team.default_depot_location_id = cls.depot.id
+        cls.team.default_origin_location_id = cls.depot.id
+        cls.team.default_destination_location_id = cls.depot.id
 
         # Create delivery partners
         cls.partner1 = cls.env["res.partner"].create(
@@ -86,7 +87,8 @@ class TestRouteOptimizer(TransactionCase):
             {
                 "name": "Test Order",
                 "tms_team_id": cls.team.id,
-                "depot_location_id": cls.depot.id,
+                "origin_id": cls.depot.id,
+                "destination_id": cls.depot.id,
             }
         )
 

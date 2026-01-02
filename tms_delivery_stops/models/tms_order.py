@@ -9,6 +9,8 @@ class TMSOrder(models.Model):
         "order_id",
         string="Delivery Stops",
         help="Multiple delivery stops for this order",
+        ondelete="set null",
+        copy=True,
     )
     total_weight = fields.Float(
         compute="_compute_totals",

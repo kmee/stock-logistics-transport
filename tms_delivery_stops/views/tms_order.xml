@@ -6,41 +6,41 @@
         <field name="model">tms.order</field>
         <field name="inherit_id" ref="tms.tms_order_view_form" />
         <field name="arch" type="xml">
-            <xpath expr="//sheet" position="inside">
-                <group string="Delivery Stops" colspan="4">
-                    <group>
-                        <field name="total_stops" />
-                        <field name="total_weight" />
-                        <field name="total_volume" />
-                        <field name="estimated_total_time" />
+            <page name="planning_page" position="before">
+                <page string="Stops" name="stops">
+                    <field name="stop_ids">
+                        <list editable="bottom">
+                            <field name="sequence" widget="handle" />
+                            <field name="partner_id" />
+                            <field name="weight" />
+                            <field name="weight_uom_id" />
+                            <field name="volume" />
+                            <field name="volume_uom_id" />
+                            <field name="unloading_time" />
+                            <field name="scheduled_date" />
+                            <field name="state" />
+                        </list>
+                    </field>
+                    <group string="Delivery Stops" colspan="4">
+                        <group>
+                            <field name="total_weight" />
+                            <field name="total_volume" />
+                        </group>
+                        <group>
+                            <field name="total_stops" />
+                            <field name="estimated_total_time" />
+                        </group>
                     </group>
-                    <group>
-                        <field
-                            name="google_maps_url"
-                            widget="url"
-                            string="View Route on Google Maps"
-                            readonly="1"
-                        />
-                    </group>
-                </group>
-                <notebook>
-                    <page string="Stops" name="stops">
-                        <field name="stop_ids">
-                            <list editable="bottom">
-                                <field name="sequence" widget="handle" />
-                                <field name="partner_id" />
-                                <field name="weight" />
-                                <field name="weight_uom_id" />
-                                <field name="volume" />
-                                <field name="volume_uom_id" />
-                                <field name="unloading_time" />
-                                <field name="scheduled_date" />
-                                <field name="state" />
-                            </list>
-                        </field>
-                    </page>
-                </notebook>
-            </xpath>
+                </page>
+            </page>
+            <field name="scheduled_date_end" position="after">
+                <field
+                    name="google_maps_url"
+                    widget="url"
+                    string="View Route on Google Maps"
+                    readonly="1"
+                />
+            </field>
         </field>
     </record>
 </odoo>

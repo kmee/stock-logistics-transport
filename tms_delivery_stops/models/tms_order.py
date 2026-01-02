@@ -27,11 +27,6 @@ class TMSOrder(models.Model):
         compute="_compute_estimated_time",
         store=False,
     )
-    depot_location_id = fields.Many2one(
-        "res.partner",
-        string="Depot Location",
-        help="Starting point/depot for this order",
-    )
 
     @api.depends("stop_ids", "stop_ids.weight", "stop_ids.volume")
     def _compute_totals(self):

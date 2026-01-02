@@ -14,8 +14,8 @@
                 <field name="volume_uom_id" />
                 <field name="unloading_time" />
                 <field name="scheduled_date" />
-                <field name="latitude" />
-                <field name="longitude" />
+                <field name="latitude" column_invisible="1" optional="hide" />
+                <field name="longitude" column_invisible="1" optional="hide" />
                 <field name="address_complete" />
                 <field name="state" />
             </list>

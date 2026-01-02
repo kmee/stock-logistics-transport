@@ -42,9 +42,16 @@ class TMSOrderStop(models.Model):
     )
     unloading_time = fields.Float(
         string="Unloading Time (minutes)",
-        default=30,
+        default=lambda self: self._default_unloading_time(),
         help="Minimum unloading time in minutes",
     )
+
+    @api.model
+    def _default_unloading_time(self):
+        """Get default unloading time from company"""
+        company = self.env.company
+        return company.tms_default_unloading_time or 30.0
+
     scheduled_date = fields.Datetime(
         help="Scheduled delivery date/time",
     )

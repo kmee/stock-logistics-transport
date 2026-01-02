@@ -6,6 +6,7 @@
     "author": "KMEE, Odoo Community Association (OCA)",
     "website": "https://github.com/OCA/stock-logistics-transport",
     "license": "AGPL-3",
+    "maturity": "beta",
     "depends": [
         "tms",
         "base_geolocalize",
@@ -13,8 +14,10 @@
     ],
     "data": [
         "security/ir.model.access.csv",
+        "views/res_config_settings.xml",
         "views/tms_order_stop.xml",
         "views/tms_order.xml",
+        "views/tms_team.xml",
     ],
     "demo": [
         "data/demo_data.xml",

@@ -14,9 +14,6 @@
                         <field name="total_volume" />
                         <field name="estimated_total_time" />
                     </group>
-                    <group>
-                        <field name="depot_location_id" />
-                    </group>
                 </group>
                 <notebook>
                     <page string="Stops" name="stops">

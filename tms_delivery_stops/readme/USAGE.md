@@ -38,12 +38,6 @@ For route optimization to work, all delivery partners must have geolocation:
 - **Total Stops**: Count of delivery stops
 - **Estimated Total Time**: Sum of all unloading times converted to hours
 
-### Step 5: Visualize on Map
-
-1. The delivery stops can be visualized on a Leaflet map view
-2. Each stop shows its address and geolocation
-3. Use the map to verify route planning
-
 ## Managing Stop States
 
 - **Draft**: Initial state when stop is created

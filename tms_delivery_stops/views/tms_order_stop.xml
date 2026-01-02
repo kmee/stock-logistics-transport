@@ -93,38 +93,11 @@
         </field>
     </record>
 
-    <!-- Leaflet Map View for TMS Order Stops -->
-    <record id="tms_order_stop_leaflet_map" model="ir.ui.view">
-        <field name="name">tms.order.stop.leaflet_map</field>
-        <field name="model">tms.order.stop</field>
-        <field name="arch" type="xml">
-            <leaflet_map
-                field_latitude="latitude"
-                field_longitude="longitude"
-                field_title="display_name"
-                field_address="address_complete"
-                default_zoom="12"
-                max_zoom="19"
-            >
-                <field name="latitude" />
-                <field name="longitude" />
-                <field name="display_name" />
-                <field name="address_complete" />
-                <field name="partner_id" />
-                <field name="order_id" />
-                <field name="sequence" />
-                <field name="weight" />
-                <field name="volume" />
-                <field name="state" />
-            </leaflet_map>
-        </field>
-    </record>
-
     <!-- Action for TMS Order Stops -->
     <record id="action_tms_order_stop" model="ir.actions.act_window">
         <field name="name">Delivery Stops</field>
         <field name="res_model">tms.order.stop</field>
-        <field name="view_mode">list,form,leaflet_map</field>
+        <field name="view_mode">list,form</field>
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">
                     Create a new delivery stop
@@ -132,14 +105,19 @@
         </field>
     </record>
 
-    <!-- Add leaflet_map view to action -->
-    <record
-        id="action_tms_order_stop_view_leaflet_map"
-        model="ir.actions.act_window.view"
-    >
-        <field name="sequence" eval="3" />
-        <field name="view_mode">leaflet_map</field>
-        <field name="view_id" ref="tms_order_stop_leaflet_map" />
+    <!-- Add list view to action -->
+    <record id="action_tms_order_stop_view_list" model="ir.actions.act_window.view">
+        <field name="sequence" eval="10" />
+        <field name="view_mode">list</field>
+        <field name="view_id" ref="tms_order_stop_tree" />
+        <field name="act_window_id" ref="action_tms_order_stop" />
+    </record>
+
+    <!-- Add form view to action -->
+    <record id="action_tms_order_stop_view_form" model="ir.actions.act_window.view">
+        <field name="sequence" eval="20" />
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="tms_order_stop_form" />
         <field name="act_window_id" ref="action_tms_order_stop" />
     </record>
 
@@ -147,7 +125,7 @@
     <menuitem
         id="menu_tms_order_stop"
         name="Delivery Stops"
-        parent="tms.root"
+        parent="tms.operations"
         action="action_tms_order_stop"
         sequence="30"
     />

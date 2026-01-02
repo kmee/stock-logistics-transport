@@ -7,7 +7,6 @@ This module requires the following Odoo modules:
 - `tms`: Base Transport Management System module
 - `base_geolocalize`: For geocoding partner addresses
 - `uom`: Units of Measure support
-- `web_view_leaflet_map`: For map visualization
 
 ## Required Configuration
 
@@ -40,14 +39,6 @@ If using with `tms_route_optimizer`:
 2. Configure the team with:
    - **Default Depot Location**: Starting point for routes (must have geolocation)
    - **Allowed Vehicle Types**: Types of vehicles allowed for this team
-
-### 4. Map View Configuration
-
-The module integrates with Leaflet map view. No additional configuration is needed, but
-ensure:
-
-- Partners have geolocation coordinates
-- The `web_view_leaflet_map` module is installed
 
 ## Optional Settings
 

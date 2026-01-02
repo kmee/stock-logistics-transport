@@ -391,8 +391,6 @@ route order</li>
 better time estimation</li>
 <li><strong>State Management</strong>: Track stop states (Draft, Scheduled, Delivered,
 Skipped)</li>
-<li><strong>Map Integration</strong>: Integration with Leaflet map view for visual
-route planning</li>
 <li><strong>Total Calculations</strong>: Automatic calculation of total weight, volume,
 and stops per order</li>
 </ul>
@@ -421,7 +419,6 @@ and stops per order</li>
 <li><tt class="docutils literal">tms</tt>: Base Transport Management System module</li>
 <li><tt class="docutils literal">base_geolocalize</tt>: For geocoding partner addresses</li>
 <li><tt class="docutils literal">uom</tt>: Units of Measure support</li>
-<li><tt class="docutils literal">web_view_leaflet_map</tt>: For map visualization</li>
 </ul>
 </div>
 <div class="section" id="required-configuration">
@@ -464,15 +461,6 @@ geolocation)</li>
 </ul>
 </li>
 </ol>
-</div>
-<div class="section" id="map-view-configuration">
-<h3>4. Map View Configuration</h3>
-<p>The module integrates with Leaflet map view. No additional configuration
-is needed, but ensure:</p>
-<ul class="simple">
-<li>Partners have geolocation coordinates</li>
-<li>The <tt class="docutils literal">web_view_leaflet_map</tt> module is installed</li>
-</ul>
 </div>
 </div>
 <div class="section" id="optional-settings">
@@ -567,14 +555,6 @@ geocode addresses</li>
 <li><strong>Estimated Total Time</strong>: Sum of all unloading times converted to
 hours</li>
 </ul>
-</div>
-<div class="section" id="step-5-visualize-on-map">
-<h3>Step 5: Visualize on Map</h3>
-<ol class="arabic simple">
-<li>The delivery stops can be visualized on a Leaflet map view</li>
-<li>Each stop shows its address and geolocation</li>
-<li>Use the map to verify route planning</li>
-</ol>
 </div>
 </div>
 <div class="section" id="managing-stop-states">

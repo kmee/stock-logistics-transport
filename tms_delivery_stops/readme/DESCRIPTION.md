@@ -16,7 +16,6 @@ information.
 - **Unloading Time**: Configure minimum unloading time per stop for better time
   estimation
 - **State Management**: Track stop states (Draft, Scheduled, Delivered, Skipped)
-- **Map Integration**: Integration with Leaflet map view for visual route planning
 - **Total Calculations**: Automatic calculation of total weight, volume, and stops per
   order
 

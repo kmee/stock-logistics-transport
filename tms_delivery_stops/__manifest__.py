@@ -10,7 +10,6 @@
         "tms",
         "base_geolocalize",
         "uom",
-        "web_view_leaflet_map",
     ],
     "data": [
         "security/ir.model.access.csv",

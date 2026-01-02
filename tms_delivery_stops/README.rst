@@ -51,8 +51,6 @@ Key Features
   better time estimation
 - **State Management**: Track stop states (Draft, Scheduled, Delivered,
   Skipped)
-- **Map Integration**: Integration with Leaflet map view for visual
-  route planning
 - **Total Calculations**: Automatic calculation of total weight, volume,
   and stops per order
 
@@ -84,7 +82,6 @@ This module requires the following Odoo modules:
 - ``tms``: Base Transport Management System module
 - ``base_geolocalize``: For geocoding partner addresses
 - ``uom``: Units of Measure support
-- ``web_view_leaflet_map``: For map visualization
 
 Required Configuration
 ----------------------
@@ -127,15 +124,6 @@ If using with ``tms_route_optimizer``:
    - **Default Depot Location**: Starting point for routes (must have
      geolocation)
    - **Allowed Vehicle Types**: Types of vehicles allowed for this team
-
-4. Map View Configuration
-~~~~~~~~~~~~~~~~~~~~~~~~~
-
-The module integrates with Leaflet map view. No additional configuration
-is needed, but ensure:
-
-- Partners have geolocation coordinates
-- The ``web_view_leaflet_map`` module is installed
 
 Optional Settings
 -----------------
@@ -228,13 +216,6 @@ Step 4: View Stop Information
 - **Total Stops**: Count of delivery stops
 - **Estimated Total Time**: Sum of all unloading times converted to
   hours
-
-Step 5: Visualize on Map
-~~~~~~~~~~~~~~~~~~~~~~~~
-
-1. The delivery stops can be visualized on a Leaflet map view
-2. Each stop shows its address and geolocation
-3. Use the map to verify route planning
 
 Managing Stop States
 --------------------

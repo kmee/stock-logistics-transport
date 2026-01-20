@@ -106,9 +106,6 @@ class TMSRouteOptimizer(models.TransientModel):
         if not self.delivery_stop_ids:
             raise UserError(_("No delivery stops to optimize"))
 
-        if not self.team_id:
-            raise UserError(_("Team is required"))
-
         # Check geolocation
         for stop in self.delivery_stop_ids:
             if not stop.latitude or not stop.longitude:

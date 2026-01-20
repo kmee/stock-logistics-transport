@@ -12,10 +12,13 @@ class TestTMSRouteOptimizerDemoOptimization(TransactionCase):
     def setUpClass(cls):
         super().setUpClass()
         # Demo team
-        cls.brazil_team = cls.env.ref("tms_route_optimizer.demo_team_brazil_small")
+        cls.brazil_team = cls.env.ref("tms_route_optimizer.demo_team_route_optimizer")
         # Demo order and stops
-        cls.brazil_order = cls.env.ref("tms_route_optimizer.demo_tms_order_brazil_1")
-        cls.brazil_stops = cls.brazil_order.stop_ids
+        cls.brazil_order = cls.env.ref("tms_route_optimizer.demo_tms_order_optimizer_1")
+        # Get stops from order (using search as stop_ids might not be available)
+        cls.brazil_stops = cls.env["tms.order.stop"].search(
+            [("order_id", "=", cls.brazil_order.id)]
+        )
 
     def test_create_optimizer_from_demo_data(self):
         """Test creating optimizer wizard from demo data"""
@@ -30,7 +33,7 @@ class TestTMSRouteOptimizerDemoOptimization(TransactionCase):
             }
         )
         self.assertEqual(optimizer.team_id, self.brazil_team)
-        self.assertEqual(len(optimizer.delivery_stop_ids), 6)
+        self.assertEqual(len(optimizer.delivery_stop_ids), 8)
         self.assertEqual(optimizer.state, "draft")
 
     def test_optimizer_auto_fill_stops(self):
@@ -63,21 +66,6 @@ class TestTMSRouteOptimizerDemoOptimization(TransactionCase):
         with self.assertRaises(UserError) as context:
             optimizer.action_run_optimization()
         self.assertIn("No delivery stops", str(context.exception))
-
-    def test_optimizer_validation_no_team(self):
-        """Test that optimizer validates team is set"""
-        optimizer = self.env["tms.route.optimizer"].create(
-            {
-                "name": "Test Optimization",
-                "date_from": self.brazil_stops[0].scheduled_date,
-                "date_to": self.brazil_stops[-1].scheduled_date,
-                "delivery_stop_ids": [(6, 0, self.brazil_stops.ids)],
-                "optimization_date": self.brazil_stops[0].scheduled_date.date(),
-            }
-        )
-        with self.assertRaises(UserError) as context:
-            optimizer.action_run_optimization()
-        self.assertIn("Team is required", str(context.exception))
 
     def test_optimizer_validation_geolocation(self):
         """Test that optimizer validates stops have geolocation"""

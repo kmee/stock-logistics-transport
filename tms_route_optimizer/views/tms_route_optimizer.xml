@@ -24,18 +24,78 @@
                     <field name="state" widget="statusbar" />
                 </header>
                 <sheet>
-                    <group>
+                    <!-- Planning Mode Section -->
+                    <group string="Planning Configuration">
                         <group>
                             <field name="name" />
-                            <field name="team_id" />
-                            <field name="optimization_date" />
+                            <field name="planning_mode" widget="radio" />
                         </group>
                         <group>
+                            <field name="optimization_date" />
                             <field name="date_from" />
                             <field name="date_to" />
                         </group>
                     </group>
+
+                    <!-- Vehicle Selection Section (conditional) -->
+                    <group string="Vehicle Selection">
+                        <group>
+                            <!-- Team is always required for stop filtering -->
+                            <field name="team_id" />
+                        </group>
+                        <group>
+                            <!-- Mode: By Specific Vehicles -->
+                            <field
+                                name="vehicle_ids"
+                                widget="many2many_tags"
+                                invisible="planning_mode != 'vehicles'"
+                                required="planning_mode == 'vehicles'"
+                            />
+                            <!-- Mode: By Vehicle Types -->
+                            <field
+                                name="vehicle_type_ids"
+                                widget="many2many_tags"
+                                invisible="planning_mode != 'vehicle_types'"
+                                required="planning_mode == 'vehicle_types'"
+                            />
+                            <field
+                                name="vehicles_per_type"
+                                invisible="planning_mode != 'vehicle_types'"
+                            />
+                        </group>
+                    </group>
+
+                    <!-- Optimization Constraints -->
+                    <group string="Optimization Constraints">
+                        <group>
+                            <field name="max_stops_per_vehicle" />
+                        </group>
+                        <group>
+                            <field name="enable_multi_day" />
+                            <field
+                                name="planning_horizon_days"
+                                invisible="not enable_multi_day"
+                            />
+                        </group>
+                    </group>
                     <notebook pages="optimization_notebook">
+                        <!-- Multi-day results page -->
+                        <page
+                            string="Daily Results"
+                            name="daily_results"
+                            invisible="not enable_multi_day or state != 'done'"
+                        >
+                            <field name="day_result_ids" nolabel="1">
+                                <list>
+                                    <field name="planning_date" />
+                                    <field name="total_vehicles" />
+                                    <field name="total_stops" />
+                                    <field name="total_distance" />
+                                    <field name="total_cost" />
+                                    <field name="unassigned_count" />
+                                </list>
+                            </field>
+                        </page>
                         <page string="Routes" name="routes" invisible="state != 'done'">
                             <field name="result_ids" nolabel="1">
                                 <list>

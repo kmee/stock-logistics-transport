@@ -19,8 +19,11 @@
     "data": [
         "security/ir.model.access.csv",
         "views/tms_route_optimizer.xml",
+        "views/tms_route_optimizer_config.xml",
+        "views/tms_route_suggestion.xml",
         "views/tms_route_optimizer_menu.xml",
         "data/ir_config_parameter.xml",
+        "data/ir_cron.xml",
     ],
     "demo": [
         "data/demo_data.xml",

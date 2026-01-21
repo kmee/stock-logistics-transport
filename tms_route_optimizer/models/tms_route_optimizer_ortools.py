@@ -84,6 +84,7 @@ class RouteOptimizerHelper:
         cost_per_km,
         minimum_trip_cost,
         max_time_seconds=300,
+        max_stops_per_vehicle=0,
     ):
         """
         Solve Vehicle Routing Problem using OR-Tools.
@@ -97,6 +98,7 @@ class RouteOptimizerHelper:
             cost_per_km: List of costs per km for each vehicle
             minimum_trip_cost: List of minimum trip costs per vehicle
             max_time_seconds: Maximum time for optimization (default: 300)
+            max_stops_per_vehicle: Maximum stops per vehicle, 0 means no limit
 
         Returns:
             dict with solution data containing:
@@ -164,6 +166,27 @@ class RouteOptimizerHelper:
             True,  # start cumul to zero
             "Volume",
         )
+
+        # Add stop count dimension (if max_stops_per_vehicle > 0)
+        if max_stops_per_vehicle > 0:
+
+            def stop_count_callback(from_index):
+                """Each stop (except depot) counts as 1"""
+                from_node = manager.IndexToNode(from_index)
+                return 0 if from_node == depot else 1
+
+            count_callback_index = routing.RegisterUnaryTransitCallback(
+                stop_count_callback
+            )
+
+            # Add dimension with max stops per vehicle
+            routing.AddDimensionWithVehicleCapacity(
+                count_callback_index,
+                0,  # slack
+                [max_stops_per_vehicle] * num_vehicles,  # max per vehicle
+                True,  # start cumul to zero
+                "StopCount",
+            )
 
         # Set search parameters
         search_parameters = pywrapcp.DefaultRoutingSearchParameters()

@@ -11,16 +11,25 @@ class TMSRouteOptimizerResult(models.TransientModel):
         required=True,
         ondelete="cascade",
     )
+    day_result_id = fields.Many2one(
+        "tms.route.optimizer.day.result",
+        string="Day Result",
+        ondelete="cascade",
+    )
+    planning_date = fields.Date(
+        related="day_result_id.planning_date",
+        store=True,
+        string="Planning Date",
+    )
     vehicle_id = fields.Many2one(
         "fleet.vehicle",
         string="Vehicle",
-        required=True,
+        # Not required for vehicle_types mode where we may not have a real vehicle
     )
     vehicle_type_id = fields.Many2one(
         "fleet.vehicle.type",
-        related="vehicle_id.vehicle_type_id",
         string="Vehicle Type",
-        readonly=True,
+        # Stored directly, not related, to support vehicle_types mode
     )
     order_id = fields.Many2one(
         "tms.order",

@@ -1,6 +1,6 @@
 import json
 import time
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from odoo import _, api, fields, models
 from odoo.exceptions import UserError
@@ -17,10 +17,97 @@ class TMSRouteOptimizer(models.TransientModel):
             f"Optimization {datetime.now().strftime('%Y-%m-%d %H:%M')}"
         ),
     )
+    # Planning mode selection
+    planning_mode = fields.Selection(
+        [
+            ("team", "By Team"),
+            ("vehicles", "By Specific Vehicles"),
+            ("vehicle_types", "By Vehicle Types"),
+        ],
+        default="team",
+        required=True,
+        help="Select how to choose vehicles for optimization",
+    )
     team_id = fields.Many2one(
         "tms.team",
         string="Team",
         required=True,
+    )
+    # For "By Specific Vehicles" mode
+    vehicle_ids = fields.Many2many(
+        "fleet.vehicle",
+        "tms_route_optimizer_vehicle_rel",
+        "optimizer_id",
+        "vehicle_id",
+        string="Vehicles",
+        help="Specific vehicles to use for optimization",
+    )
+    # For "By Vehicle Types" mode
+    vehicle_type_ids = fields.Many2many(
+        "fleet.vehicle.type",
+        "tms_route_optimizer_vehicle_type_rel",
+        "optimizer_id",
+        "vehicle_type_id",
+        string="Vehicle Types",
+        help="Types of vehicles to use for optimization",
+    )
+    vehicles_per_type = fields.Integer(
+        default=5,
+        string="Vehicles per Type",
+        help="Number of virtual vehicles to create per vehicle type",
+    )
+    # Max stops constraint
+    max_stops_per_vehicle = fields.Integer(
+        default=0,
+        string="Max Stops per Vehicle",
+        help="Maximum number of stops per vehicle. 0 means no limit.",
+    )
+    # Multi-day planning
+    enable_multi_day = fields.Boolean(
+        default=False,
+        string="Enable Multi-Day Planning",
+        help="Allow optimization to span multiple days if capacity is exceeded",
+    )
+    planning_horizon_days = fields.Integer(
+        default=3,
+        string="Planning Horizon (days)",
+        help="Number of days to consider for multi-day optimization",
+    )
+    day_result_ids = fields.One2many(
+        "tms.route.optimizer.day.result",
+        "optimizer_id",
+        string="Daily Results",
+    )
+    # Recalculation options
+    recalculation_mode = fields.Selection(
+        [
+            ("new", "New Optimization"),
+            ("merge", "Merge with Pending Trips"),
+        ],
+        default="new",
+        string="Mode",
+        help="'New' creates fresh routes. "
+        "'Merge' adds stops to existing pending trips.",
+    )
+    include_pending_orders = fields.Boolean(
+        default=False,
+        help="Include stops from pending (non-executed) orders in optimization",
+    )
+    pending_order_ids = fields.Many2many(
+        "tms.order",
+        "tms_route_optimizer_pending_order_rel",
+        "optimizer_id",
+        "order_id",
+        string="Available Pending Orders",
+        compute="_compute_pending_orders",
+        store=False,
+    )
+    selected_pending_order_ids = fields.Many2many(
+        "tms.order",
+        "tms_route_optimizer_selected_pending_order_rel",
+        "optimizer_id",
+        "order_id",
+        string="Orders to Recalculate",
     )
     date_from = fields.Datetime(
         required=True,
@@ -101,6 +188,27 @@ class TMSRouteOptimizer(models.TransientModel):
             )
             self.delivery_stop_ids = stops
 
+    @api.depends("team_id")
+    def _compute_pending_orders(self):
+        """Find orders that can be recalculated (not yet executed)"""
+        for wizard in self:
+            if wizard.team_id:
+                # Find orders with stops in non-delivered state that can be recalculated
+                pending_orders = self.env["tms.order"].search(
+                    [
+                        ("tms_team_id", "=", wizard.team_id.id),
+                        ("stage_id.is_completed", "=", False),
+                        ("is_locked_for_optimization", "=", False),
+                    ]
+                )
+                # Filter to only include orders where no stops are delivered
+                recalculable_orders = pending_orders.filtered(
+                    lambda o: not any(s.state == "delivered" for s in o.stop_ids)
+                )
+                wizard.pending_order_ids = recalculable_orders
+            else:
+                wizard.pending_order_ids = self.env["tms.order"]
+
     def _validate_optimization_data(self):
         """Validate data before optimization"""
         if not self.delivery_stop_ids:
@@ -136,7 +244,19 @@ class TMSRouteOptimizer(models.TransientModel):
             )
         return origin_location
 
-    def _get_vehicles_for_team(self):
+    def _get_vehicles_for_optimization(self):
+        """Get vehicles based on planning mode"""
+        if self.planning_mode == "team":
+            return self._get_vehicles_by_team()
+        elif self.planning_mode == "vehicles":
+            return self._get_vehicles_by_selection()
+        elif self.planning_mode == "vehicle_types":
+            # For vehicle_types mode, we return None here
+            # and use _prepare_vehicle_data_from_types() instead
+            return None
+        raise UserError(_("Invalid planning mode"))
+
+    def _get_vehicles_by_team(self):
         """Get vehicles for team, filtered by allowed vehicle types"""
         vehicle_domain = [("tms_team_id", "=", self.team_id.id)]
         if self.team_id.allowed_vehicle_type_ids:
@@ -147,6 +267,52 @@ class TMSRouteOptimizer(models.TransientModel):
         if not vehicles:
             raise UserError(_("No vehicles available for this team"))
         return vehicles
+
+    def _get_vehicles_by_selection(self):
+        """Get user-selected specific vehicles"""
+        if not self.vehicle_ids:
+            raise UserError(_("Please select at least one vehicle"))
+        return self.vehicle_ids
+
+    def _prepare_vehicle_data_from_types(self):
+        """
+        Prepare vehicle data arrays from vehicle types (virtual vehicles).
+        Returns capacity and cost arrays plus type mapping for result creation.
+        """
+        if not self.vehicle_type_ids:
+            raise UserError(_("Please select at least one vehicle type"))
+
+        vehicle_capacities_weight = []
+        vehicle_capacities_volume = []
+        cost_per_km = []
+        minimum_trip_cost = []
+        type_mapping = []  # Track which type each slot belongs to
+
+        for vtype in self.vehicle_type_ids:
+            for _i in range(self.vehicles_per_type):
+                vehicle_capacities_weight.append(vtype.default_weight_capacity or 1000)
+                vehicle_capacities_volume.append(vtype.default_volume_capacity or 10)
+                cost_per_km.append(vtype.default_cost_per_km or 5.0)
+                minimum_trip_cost.append(vtype.default_minimum_trip_cost or 100.0)
+                type_mapping.append(vtype.id)
+
+        return (
+            vehicle_capacities_weight,
+            vehicle_capacities_volume,
+            cost_per_km,
+            minimum_trip_cost,
+            type_mapping,
+        )
+
+    def _get_vehicle_for_type(self, vehicle_type_id):
+        """Find an available vehicle of the specified type for order creation"""
+        return self.env["fleet.vehicle"].search(
+            [
+                ("vehicle_type_id", "=", vehicle_type_id),
+                ("tms_team_id", "=", self.team_id.id),
+            ],
+            limit=1,
+        )
 
     def _prepare_location_data(self, origin_location):
         """Prepare location data for optimization"""
@@ -214,6 +380,7 @@ class TMSRouteOptimizer(models.TransientModel):
             cost_per_km,
             minimum_trip_cost,
             max_time_seconds=max_time,
+            max_stops_per_vehicle=self.max_stops_per_vehicle or 0,
         )
 
         if not solution:
@@ -294,6 +461,56 @@ class TMSRouteOptimizer(models.TransientModel):
             [{"lat": lat, "lon": lon} for lat, lon in route_coords]
         )
 
+    def _create_result_records_from_types(
+        self,
+        solution,
+        type_mapping,
+        locations,
+        stop_ids,
+        vehicle_capacities_weight,
+        vehicle_capacities_volume,
+    ):
+        """Create result records for vehicle types mode (virtual vehicles)"""
+        for _route_idx, route in enumerate(solution["routes"]):
+            vehicle_idx = route["vehicle_id"]
+            vehicle_type_id = type_mapping[vehicle_idx]
+            route_stops = self._get_route_stops(route, stop_ids)
+
+            # Try to find a real vehicle of this type for assignment
+            vehicle = self._get_vehicle_for_type(vehicle_type_id)
+
+            # Get capacities for utilization calculation
+            weight_capacity = vehicle_capacities_weight[vehicle_idx]
+            volume_capacity = vehicle_capacities_volume[vehicle_idx]
+
+            result = self.env["tms.route.optimizer.result"].create(
+                {
+                    "optimizer_id": self.id,
+                    "vehicle_id": vehicle.id if vehicle else False,
+                    "vehicle_type_id": vehicle_type_id,
+                    "stop_ids": [(6, 0, [s.id for s in route_stops])],
+                    "stop_count": len(route_stops),
+                    "total_distance": route["distance"],
+                    "total_weight": route["weight"],
+                    "total_volume": route["volume"],
+                    "weight_utilization": (
+                        (route["weight"] / weight_capacity * 100)
+                        if weight_capacity
+                        else 0
+                    ),
+                    "volume_utilization": (
+                        (route["volume"] / volume_capacity * 100)
+                        if volume_capacity
+                        else 0
+                    ),
+                    "route_cost": route["cost"],
+                    "cost_per_km": route["cost"] / route["distance"]
+                    if route["distance"] > 0
+                    else 0,
+                }
+            )
+            self._add_map_urls_to_result(result, route, locations)
+
     def action_run_optimization(self):
         """Run the route optimization"""
         self.state = "optimizing"
@@ -302,13 +519,42 @@ class TMSRouteOptimizer(models.TransientModel):
             start_time = time.time()
 
             self._validate_optimization_data()
-            origin_location = self._validate_origin_location()
-            vehicles = self._get_vehicles_for_team()
 
-            locations, stop_weights, stop_volumes, stop_ids = (
-                self._prepare_location_data(origin_location)
-            )
+            if self.enable_multi_day:
+                self._run_multi_day_optimization(start_time)
+            else:
+                self._run_single_day_optimization(start_time)
 
+            self.state = "done"
+
+        except Exception as e:
+            self.state = "error"
+            self.error_message = str(e)
+            raise UserError(_("Optimization failed: %s") % str(e)) from e
+
+    def _run_single_day_optimization(self, start_time):
+        """Run optimization for a single day (original behavior)"""
+        origin_location = self._validate_origin_location()
+
+        locations, stop_weights, stop_volumes, stop_ids = self._prepare_location_data(
+            origin_location
+        )
+
+        # Get vehicles or virtual vehicle data based on planning mode
+        vehicles = self._get_vehicles_for_optimization()
+        type_mapping = None
+
+        if self.planning_mode == "vehicle_types":
+            # Virtual vehicles mode - get data from types
+            (
+                vehicle_capacities_weight,
+                vehicle_capacities_volume,
+                cost_per_km,
+                minimum_trip_cost,
+                type_mapping,
+            ) = self._prepare_vehicle_data_from_types()
+        else:
+            # Real vehicles mode (team or selection)
             (
                 vehicle_capacities_weight,
                 vehicle_capacities_volume,
@@ -316,6 +562,110 @@ class TMSRouteOptimizer(models.TransientModel):
                 minimum_trip_cost,
             ) = self._prepare_vehicle_data(vehicles)
 
+        solution = self._solve_vrp(
+            locations,
+            stop_weights,
+            stop_volumes,
+            vehicle_capacities_weight,
+            vehicle_capacities_volume,
+            cost_per_km,
+            minimum_trip_cost,
+        )
+
+        self._store_optimization_results(solution, start_time)
+
+        # Create result records based on planning mode
+        if self.planning_mode == "vehicle_types":
+            self._create_result_records_from_types(
+                solution,
+                type_mapping,
+                locations,
+                stop_ids,
+                vehicle_capacities_weight,
+                vehicle_capacities_volume,
+            )
+        else:
+            self._create_result_records(solution, vehicles, locations, stop_ids)
+
+    def _run_multi_day_optimization(self, start_time):
+        """
+        Multi-day optimization strategy:
+        1. Start with all stops
+        2. Run optimization for day 1 with available vehicles
+        3. Collect unassigned stops (if any)
+        4. Repeat for day 2, day 3, etc. until all stops are assigned
+           or planning horizon is reached
+        """
+        remaining_stops = self.delivery_stop_ids
+        current_date = self.optimization_date
+        total_cost = 0
+        total_distance = 0
+        total_vehicles = 0
+
+        for day_offset in range(self.planning_horizon_days):
+            if not remaining_stops:
+                break
+
+            planning_date = current_date + timedelta(days=day_offset)
+
+            # Run optimization for remaining stops
+            solution, assigned_stops, unassigned_stops = self._optimize_for_day(
+                remaining_stops, planning_date
+            )
+
+            if solution and solution.get("routes"):
+                # Create day result
+                self._create_day_result(
+                    planning_date, solution, assigned_stops, unassigned_stops
+                )
+
+                total_cost += solution["total_cost"]
+                total_distance += solution["total_distance"]
+                total_vehicles += solution["num_vehicles_used"]
+
+            remaining_stops = unassigned_stops
+
+        # Store aggregated results
+        self.total_cost = total_cost
+        self.total_distance = total_distance
+        self.total_vehicles_used = total_vehicles
+        self.optimization_time = time.time() - start_time
+
+        if remaining_stops:
+            # Some stops couldn't be assigned within horizon
+            self._handle_unassignable_stops(remaining_stops)
+
+    def _optimize_for_day(self, stops, planning_date):
+        """Run optimization for a specific day's stops"""
+        origin_location = self._validate_origin_location()
+
+        # Prepare location data for these specific stops
+        locations, stop_weights, stop_volumes, stop_ids = (
+            self._prepare_location_data_for_stops(origin_location, stops)
+        )
+
+        # Get vehicles based on planning mode
+        vehicles = self._get_vehicles_for_optimization()
+        type_mapping = None
+
+        if self.planning_mode == "vehicle_types":
+            (
+                vehicle_capacities_weight,
+                vehicle_capacities_volume,
+                cost_per_km,
+                minimum_trip_cost,
+                type_mapping,
+            ) = self._prepare_vehicle_data_from_types()
+        else:
+            (
+                vehicle_capacities_weight,
+                vehicle_capacities_volume,
+                cost_per_km,
+                minimum_trip_cost,
+            ) = self._prepare_vehicle_data(vehicles)
+
+        # Try to solve VRP
+        try:
             solution = self._solve_vrp(
                 locations,
                 stop_weights,
@@ -325,16 +675,145 @@ class TMSRouteOptimizer(models.TransientModel):
                 cost_per_km,
                 minimum_trip_cost,
             )
+        except UserError:
+            # No feasible solution - all stops are unassigned
+            return None, self.env["tms.order.stop"], stops
 
-            self._store_optimization_results(solution, start_time)
-            self._create_result_records(solution, vehicles, locations, stop_ids)
+        # Identify assigned vs unassigned stops
+        assigned_stop_ids = set()
+        for route in solution.get("routes", []):
+            for node in route["route"][1:-1]:
+                stop_idx = node - 1
+                if 0 <= stop_idx < len(stop_ids):
+                    assigned_stop_ids.add(stop_ids[stop_idx])
 
-            self.state = "done"
+        assigned_stops = stops.filtered(lambda s: s.id in assigned_stop_ids)
+        unassigned_stops = stops.filtered(lambda s: s.id not in assigned_stop_ids)
 
-        except Exception as e:
-            self.state = "error"
-            self.error_message = str(e)
-            raise UserError(_("Optimization failed: %s") % str(e)) from e
+        return solution, assigned_stops, unassigned_stops
+
+    def _prepare_location_data_for_stops(self, origin_location, stops):
+        """Prepare location data for specific stops (used in multi-day)"""
+        depot_lat = origin_location.partner_latitude
+        depot_lon = origin_location.partner_longitude
+
+        locations = [(depot_lat, depot_lon)]  # Depot is first
+        stop_weights = []
+        stop_volumes = []
+        stop_ids = []
+
+        for stop in stops:
+            locations.append((stop.latitude, stop.longitude))
+            stop_weights.append(stop.weight or 0)
+            stop_volumes.append(stop.volume or 0)
+            stop_ids.append(stop.id)
+
+        return locations, stop_weights, stop_volumes, stop_ids
+
+    def _create_day_result(
+        self, planning_date, solution, assigned_stops, unassigned_stops
+    ):
+        """Create a day result record with its routes"""
+        day_result = self.env["tms.route.optimizer.day.result"].create(
+            {
+                "optimizer_id": self.id,
+                "planning_date": planning_date,
+                "unassigned_stop_ids": [(6, 0, unassigned_stops.ids)]
+                if unassigned_stops
+                else False,
+            }
+        )
+
+        # Create result records for this day
+        origin_location = self._get_origin_location()
+        locations, _, _, stop_ids = self._prepare_location_data_for_stops(
+            origin_location, assigned_stops
+        )
+
+        vehicles = self._get_vehicles_for_optimization()
+        type_mapping = None
+
+        if self.planning_mode == "vehicle_types":
+            (
+                vehicle_capacities_weight,
+                vehicle_capacities_volume,
+                _,
+                _,
+                type_mapping,
+            ) = self._prepare_vehicle_data_from_types()
+        else:
+            vehicle_capacities_weight = None
+            vehicle_capacities_volume = None
+
+        for route in solution.get("routes", []):
+            vehicle_idx = route["vehicle_id"]
+            route_stops = self._get_route_stops_from_ids(
+                route, stop_ids, assigned_stops
+            )
+
+            if self.planning_mode == "vehicle_types":
+                vehicle_type_id = type_mapping[vehicle_idx]
+                vehicle = self._get_vehicle_for_type(vehicle_type_id)
+                weight_capacity = vehicle_capacities_weight[vehicle_idx]
+                volume_capacity = vehicle_capacities_volume[vehicle_idx]
+            else:
+                vehicle = vehicles[vehicle_idx]
+                vehicle_type_id = (
+                    vehicle.vehicle_type_id.id if vehicle.vehicle_type_id else False
+                )
+                weight_capacity = vehicle.weight_capacity
+                volume_capacity = vehicle.volume_capacity
+
+            self.env["tms.route.optimizer.result"].create(
+                {
+                    "optimizer_id": self.id,
+                    "day_result_id": day_result.id,
+                    "vehicle_id": vehicle.id if vehicle else False,
+                    "vehicle_type_id": vehicle_type_id,
+                    "stop_ids": [(6, 0, [s.id for s in route_stops])],
+                    "stop_count": len(route_stops),
+                    "total_distance": route["distance"],
+                    "total_weight": route["weight"],
+                    "total_volume": route["volume"],
+                    "weight_utilization": (
+                        (route["weight"] / weight_capacity * 100)
+                        if weight_capacity
+                        else 0
+                    ),
+                    "volume_utilization": (
+                        (route["volume"] / volume_capacity * 100)
+                        if volume_capacity
+                        else 0
+                    ),
+                    "route_cost": route["cost"],
+                    "cost_per_km": route["cost"] / route["distance"]
+                    if route["distance"] > 0
+                    else 0,
+                }
+            )
+
+        return day_result
+
+    def _get_route_stops_from_ids(self, route, stop_ids, stops):
+        """Get stops in route order from a specific stops recordset"""
+        route_stops = []
+        for node in route["route"][1:-1]:
+            stop_idx = node - 1
+            if 0 <= stop_idx < len(stop_ids):
+                stop_id = stop_ids[stop_idx]
+                stop = stops.filtered(lambda s, sid=stop_id: s.id == sid)
+                if stop:
+                    route_stops.append(stop[0])
+        return route_stops
+
+    def _handle_unassignable_stops(self, remaining_stops):
+        """Handle stops that couldn't be assigned within planning horizon"""
+        # Create a warning message but don't fail
+        self.error_message = _(
+            "Warning: %(stop_count)d stops could not be assigned within the "
+            "%(days)d-day planning horizon. "
+            "Consider increasing the horizon or adding more vehicles."
+        ) % {"stop_count": len(remaining_stops), "days": self.planning_horizon_days}
 
     def action_create_orders(self):
         """Create TMS orders from optimization results"""

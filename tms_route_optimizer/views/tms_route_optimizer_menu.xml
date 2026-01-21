@@ -12,12 +12,39 @@
         </field>
     </record>
 
-    <!-- Menu Item -->
+    <!-- Parent Menu for Route Optimizer -->
     <menuitem
-        id="menu_tms_route_optimizer"
+        id="menu_tms_route_optimizer_root"
         name="Route Optimizer"
         parent="tms.operations"
-        action="action_tms_route_optimizer"
         sequence="40"
+    />
+
+    <!-- Menu Item - Manual Optimization -->
+    <menuitem
+        id="menu_tms_route_optimizer"
+        name="Manual Optimization"
+        parent="menu_tms_route_optimizer_root"
+        action="action_tms_route_optimizer"
+        sequence="10"
+    />
+
+    <!-- Menu Item - Route Suggestions -->
+    <menuitem
+        id="menu_tms_route_suggestion"
+        name="Route Suggestions"
+        parent="menu_tms_route_optimizer_root"
+        action="tms_route_suggestion_action"
+        sequence="20"
+    />
+
+    <!-- Menu Item - Optimization Configuration -->
+    <menuitem
+        id="menu_tms_route_optimizer_config"
+        name="Auto Optimization Config"
+        parent="menu_tms_route_optimizer_root"
+        action="tms_route_optimizer_config_action"
+        sequence="30"
+        groups="base.group_system"
     />
 </odoo>

@@ -78,6 +78,30 @@
                             />
                         </group>
                     </group>
+
+                    <!-- Recalculation Options -->
+                    <group string="Recalculation Options">
+                        <group>
+                            <field name="recalculation_mode" />
+                            <field
+                                name="include_pending_orders"
+                                invisible="recalculation_mode != 'merge'"
+                            />
+                        </group>
+                        <group>
+                            <field
+                                name="pending_order_ids"
+                                widget="many2many_tags"
+                                readonly="1"
+                                invisible="recalculation_mode != 'merge'"
+                            />
+                            <field
+                                name="selected_pending_order_ids"
+                                widget="many2many_tags"
+                                invisible="recalculation_mode != 'merge' or not include_pending_orders"
+                            />
+                        </group>
+                    </group>
                     <notebook pages="optimization_notebook">
                         <!-- Multi-day results page -->
                         <page

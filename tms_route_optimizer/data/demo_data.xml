@@ -108,7 +108,9 @@
             name="allowed_vehicle_type_ids"
             eval="[(6, 0, [
             ref('tms_vehicle_capacity.fleet_vehicle_type_van'),
-            ref('tms_vehicle_capacity.fleet_vehicle_type_vuc')
+            ref('tms_vehicle_capacity.fleet_vehicle_type_vuc'),
+            ref('tms_vehicle_capacity.fleet_vehicle_type_toco'),
+            ref('tms_vehicle_capacity.fleet_vehicle_type_truck')
         ])]"
         />
         <field name="default_origin_location_id" ref="demo_depot_location_optimizer" />
@@ -293,5 +295,522 @@
             eval="(DateTime.now() + timedelta(days=1)).strftime('%Y-%m-%d 16:00:00')"
         />
         <field name="state">draft</field>
+    </record>
+
+    <!-- Additional Demo Partners (9-20) for expanded testing -->
+    <record id="demo_partner_optimizer_9" model="res.partner">
+        <field name="name">Cliente - R. Itaberaba, Vila Formosa</field>
+        <field name="is_company">True</field>
+        <field name="street">R. Itaberaba, 1234</field>
+        <field name="city">São Paulo</field>
+        <field name="zip">00000-000</field>
+        <field name="country_id" ref="base.br" />
+        <field name="partner_latitude">-23.5401</field>
+        <field name="partner_longitude">-46.5749</field>
+    </record>
+
+    <record id="demo_partner_optimizer_10" model="res.partner">
+        <field name="name">Cliente - Av. Radial Leste, Vila Carrão</field>
+        <field name="is_company">True</field>
+        <field name="street">Av. Radial Leste, 5678</field>
+        <field name="city">São Paulo</field>
+        <field name="zip">00000-000</field>
+        <field name="country_id" ref="base.br" />
+        <field name="partner_latitude">-23.5450</field>
+        <field name="partner_longitude">-46.5650</field>
+    </record>
+
+    <record id="demo_partner_optimizer_11" model="res.partner">
+        <field name="name">Cliente - R. Tuiuti, Tatuapé</field>
+        <field name="is_company">True</field>
+        <field name="street">R. Tuiuti, 901</field>
+        <field name="city">São Paulo</field>
+        <field name="zip">00000-000</field>
+        <field name="country_id" ref="base.br" />
+        <field name="partner_latitude">-23.5350</field>
+        <field name="partner_longitude">-46.5750</field>
+    </record>
+
+    <record id="demo_partner_optimizer_12" model="res.partner">
+        <field name="name">Cliente - Av. Celso Garcia, Belém</field>
+        <field name="is_company">True</field>
+        <field name="street">Av. Celso Garcia, 2345</field>
+        <field name="city">São Paulo</field>
+        <field name="zip">00000-000</field>
+        <field name="country_id" ref="base.br" />
+        <field name="partner_latitude">-23.5300</field>
+        <field name="partner_longitude">-46.6000</field>
+    </record>
+
+    <record id="demo_partner_optimizer_13" model="res.partner">
+        <field name="name">Cliente - R. do Manifesto, Mooca</field>
+        <field name="is_company">True</field>
+        <field name="street">R. do Manifesto, 678</field>
+        <field name="city">São Paulo</field>
+        <field name="zip">00000-000</field>
+        <field name="country_id" ref="base.br" />
+        <field name="partner_latitude">-23.5500</field>
+        <field name="partner_longitude">-46.6000</field>
+    </record>
+
+    <record id="demo_partner_optimizer_14" model="res.partner">
+        <field name="name">Cliente - Av. do Estado, Brás</field>
+        <field name="is_company">True</field>
+        <field name="street">Av. do Estado, 3456</field>
+        <field name="city">São Paulo</field>
+        <field name="zip">00000-000</field>
+        <field name="country_id" ref="base.br" />
+        <field name="partner_latitude">-23.5450</field>
+        <field name="partner_longitude">-46.6150</field>
+    </record>
+
+    <record id="demo_partner_optimizer_15" model="res.partner">
+        <field name="name">Cliente - R. Vitorino Carmilo, Barra Funda</field>
+        <field name="is_company">True</field>
+        <field name="street">R. Vitorino Carmilo, 789</field>
+        <field name="city">São Paulo</field>
+        <field name="zip">00000-000</field>
+        <field name="country_id" ref="base.br" />
+        <field name="partner_latitude">-23.5200</field>
+        <field name="partner_longitude">-46.6600</field>
+    </record>
+
+    <record id="demo_partner_optimizer_16" model="res.partner">
+        <field name="name">Cliente - Av. Marquês de São Vicente, Água Branca</field>
+        <field name="is_company">True</field>
+        <field name="street">Av. Marquês de São Vicente, 4567</field>
+        <field name="city">São Paulo</field>
+        <field name="zip">00000-000</field>
+        <field name="country_id" ref="base.br" />
+        <field name="partner_latitude">-23.5250</field>
+        <field name="partner_longitude">-46.6700</field>
+    </record>
+
+    <record id="demo_partner_optimizer_17" model="res.partner">
+        <field name="name">Cliente - R. Turiassu, Perdizes</field>
+        <field name="is_company">True</field>
+        <field name="street">R. Turiassu, 123</field>
+        <field name="city">São Paulo</field>
+        <field name="zip">00000-000</field>
+        <field name="country_id" ref="base.br" />
+        <field name="partner_latitude">-23.5400</field>
+        <field name="partner_longitude">-46.6800</field>
+    </record>
+
+    <record id="demo_partner_optimizer_18" model="res.partner">
+        <field name="name">Cliente - Av. Sumaré, Sumaré</field>
+        <field name="is_company">True</field>
+        <field name="street">Av. Sumaré, 890</field>
+        <field name="city">São Paulo</field>
+        <field name="zip">00000-000</field>
+        <field name="country_id" ref="base.br" />
+        <field name="partner_latitude">-23.5500</field>
+        <field name="partner_longitude">-46.6750</field>
+    </record>
+
+    <record id="demo_partner_optimizer_19" model="res.partner">
+        <field name="name">Cliente - R. Augusta, Consolação</field>
+        <field name="is_company">True</field>
+        <field name="street">R. Augusta, 234</field>
+        <field name="city">São Paulo</field>
+        <field name="zip">00000-000</field>
+        <field name="country_id" ref="base.br" />
+        <field name="partner_latitude">-23.5550</field>
+        <field name="partner_longitude">-46.6650</field>
+    </record>
+
+    <record id="demo_partner_optimizer_20" model="res.partner">
+        <field name="name">Cliente - Av. Paulista, Bela Vista</field>
+        <field name="is_company">True</field>
+        <field name="street">Av. Paulista, 1578</field>
+        <field name="city">São Paulo</field>
+        <field name="zip">00000-000</field>
+        <field name="country_id" ref="base.br" />
+        <field name="partner_latitude">-23.5610</field>
+        <field name="partner_longitude">-46.6560</field>
+    </record>
+
+    <!-- Additional Vehicles -->
+    <record id="demo_vehicle_optimizer_van_2" model="fleet.vehicle">
+        <field name="license_plate">OPT-VAN-002</field>
+        <field name="model_id" ref="demo_model_optimizer_van" />
+        <field
+            name="vehicle_type_id"
+            ref="tms_vehicle_capacity.fleet_vehicle_type_van"
+        />
+        <field name="weight_capacity">500</field>
+        <field name="volume_capacity">10</field>
+        <field name="cost_per_km">2.50</field>
+        <field name="minimum_trip_cost">50.00</field>
+        <field name="tms_team_id" ref="demo_team_route_optimizer" />
+    </record>
+
+    <record id="demo_vehicle_optimizer_vuc_2" model="fleet.vehicle">
+        <field name="license_plate">OPT-VUC-002</field>
+        <field name="model_id" ref="demo_model_optimizer_van" />
+        <field
+            name="vehicle_type_id"
+            ref="tms_vehicle_capacity.fleet_vehicle_type_vuc"
+        />
+        <field name="weight_capacity">500</field>
+        <field name="volume_capacity">10</field>
+        <field name="cost_per_km">2.50</field>
+        <field name="minimum_trip_cost">50.00</field>
+        <field name="tms_team_id" ref="demo_team_route_optimizer" />
+    </record>
+
+    <record id="demo_vehicle_optimizer_toco_1" model="fleet.vehicle">
+        <field name="license_plate">OPT-TOCO-001</field>
+        <field name="model_id" ref="demo_model_optimizer_van" />
+        <field
+            name="vehicle_type_id"
+            ref="tms_vehicle_capacity.fleet_vehicle_type_toco"
+        />
+        <field name="weight_capacity">3000</field>
+        <field name="volume_capacity">30</field>
+        <field name="cost_per_km">5.00</field>
+        <field name="minimum_trip_cost">150.00</field>
+        <field name="tms_team_id" ref="demo_team_route_optimizer" />
+    </record>
+
+    <record id="demo_vehicle_optimizer_truck_1" model="fleet.vehicle">
+        <field name="license_plate">OPT-TRUCK-001</field>
+        <field name="model_id" ref="demo_model_optimizer_van" />
+        <field
+            name="vehicle_type_id"
+            ref="tms_vehicle_capacity.fleet_vehicle_type_truck"
+        />
+        <field name="weight_capacity">5000</field>
+        <field name="volume_capacity">50</field>
+        <field name="cost_per_km">7.00</field>
+        <field name="minimum_trip_cost">200.00</field>
+        <field name="tms_team_id" ref="demo_team_route_optimizer" />
+    </record>
+
+    <!-- Additional TMS Orders for Recalculation Testing -->
+    <record id="demo_tms_order_optimizer_2" model="tms.order">
+        <field name="name">ORD-OPT-002</field>
+        <field name="tms_team_id" ref="demo_team_route_optimizer" />
+        <field name="origin_id" ref="demo_depot_location_optimizer" />
+        <field name="destination_id" ref="demo_depot_location_optimizer" />
+        <field name="is_locked_for_optimization">False</field>
+    </record>
+
+    <record id="demo_tms_order_optimizer_3" model="tms.order">
+        <field name="name">ORD-OPT-003</field>
+        <field name="tms_team_id" ref="demo_team_route_optimizer" />
+        <field name="origin_id" ref="demo_depot_location_optimizer" />
+        <field name="destination_id" ref="demo_depot_location_optimizer" />
+        <field name="is_locked_for_optimization">True</field>
+    </record>
+
+    <!-- Additional TMS Orders for Multi-day Testing -->
+    <record id="demo_tms_order_optimizer_4" model="tms.order">
+        <field name="name">ORD-OPT-004</field>
+        <field name="tms_team_id" ref="demo_team_route_optimizer" />
+        <field name="origin_id" ref="demo_depot_location_optimizer" />
+        <field name="destination_id" ref="demo_depot_location_optimizer" />
+        <field name="is_locked_for_optimization">False</field>
+    </record>
+
+    <record id="demo_tms_order_optimizer_5" model="tms.order">
+        <field name="name">ORD-OPT-005</field>
+        <field name="tms_team_id" ref="demo_team_route_optimizer" />
+        <field name="origin_id" ref="demo_depot_location_optimizer" />
+        <field name="destination_id" ref="demo_depot_location_optimizer" />
+        <field name="is_locked_for_optimization">False</field>
+    </record>
+
+    <!-- Additional Stops for Order 2 (for recalculation testing) -->
+    <record id="demo_tms_order_stop_optimizer_9" model="tms.order.stop">
+        <field name="order_id" ref="demo_tms_order_optimizer_2" />
+        <field name="sequence">10</field>
+        <field name="partner_id" ref="demo_partner_optimizer_9" />
+        <field name="weight">90.0</field>
+        <field name="weight_uom_id" ref="uom.product_uom_kgm" />
+        <field name="volume">2.0</field>
+        <field name="volume_uom_id" ref="uom.product_uom_cubic_meter" />
+        <field name="unloading_time">30</field>
+        <field
+            name="scheduled_date"
+            eval="(DateTime.now() + timedelta(days=2)).strftime('%Y-%m-%d 09:00:00')"
+        />
+        <field name="state">scheduled</field>
+    </record>
+
+    <record id="demo_tms_order_stop_optimizer_10" model="tms.order.stop">
+        <field name="order_id" ref="demo_tms_order_optimizer_2" />
+        <field name="sequence">20</field>
+        <field name="partner_id" ref="demo_partner_optimizer_10" />
+        <field name="weight">85.0</field>
+        <field name="weight_uom_id" ref="uom.product_uom_kgm" />
+        <field name="volume">1.9</field>
+        <field name="volume_uom_id" ref="uom.product_uom_cubic_meter" />
+        <field name="unloading_time">30</field>
+        <field
+            name="scheduled_date"
+            eval="(DateTime.now() + timedelta(days=2)).strftime('%Y-%m-%d 10:00:00')"
+        />
+        <field name="state">scheduled</field>
+    </record>
+
+    <record id="demo_tms_order_stop_optimizer_11" model="tms.order.stop">
+        <field name="order_id" ref="demo_tms_order_optimizer_2" />
+        <field name="sequence">30</field>
+        <field name="partner_id" ref="demo_partner_optimizer_11" />
+        <field name="weight">95.0</field>
+        <field name="weight_uom_id" ref="uom.product_uom_kgm" />
+        <field name="volume">2.1</field>
+        <field name="volume_uom_id" ref="uom.product_uom_cubic_meter" />
+        <field name="unloading_time">30</field>
+        <field
+            name="scheduled_date"
+            eval="(DateTime.now() + timedelta(days=2)).strftime('%Y-%m-%d 11:00:00')"
+        />
+        <field name="state">scheduled</field>
+    </record>
+
+    <record id="demo_tms_order_stop_optimizer_12" model="tms.order.stop">
+        <field name="order_id" ref="demo_tms_order_optimizer_2" />
+        <field name="sequence">40</field>
+        <field name="partner_id" ref="demo_partner_optimizer_12" />
+        <field name="weight">100.0</field>
+        <field name="weight_uom_id" ref="uom.product_uom_kgm" />
+        <field name="volume">2.2</field>
+        <field name="volume_uom_id" ref="uom.product_uom_cubic_meter" />
+        <field name="unloading_time">30</field>
+        <field
+            name="scheduled_date"
+            eval="(DateTime.now() + timedelta(days=2)).strftime('%Y-%m-%d 12:00:00')"
+        />
+        <field name="state">scheduled</field>
+    </record>
+
+    <record id="demo_tms_order_stop_optimizer_13" model="tms.order.stop">
+        <field name="order_id" ref="demo_tms_order_optimizer_2" />
+        <field name="sequence">50</field>
+        <field name="partner_id" ref="demo_partner_optimizer_13" />
+        <field name="weight">88.0</field>
+        <field name="weight_uom_id" ref="uom.product_uom_kgm" />
+        <field name="volume">1.95</field>
+        <field name="volume_uom_id" ref="uom.product_uom_cubic_meter" />
+        <field name="unloading_time">30</field>
+        <field
+            name="scheduled_date"
+            eval="(DateTime.now() + timedelta(days=2)).strftime('%Y-%m-%d 13:00:00')"
+        />
+        <field name="state">scheduled</field>
+    </record>
+
+    <!-- Stops for Multi-day Testing (Order 4: days 1-2) -->
+    <record id="demo_tms_order_stop_optimizer_14" model="tms.order.stop">
+        <field name="order_id" ref="demo_tms_order_optimizer_4" />
+        <field name="sequence">10</field>
+        <field name="partner_id" ref="demo_partner_optimizer_14" />
+        <field name="weight">120.0</field>
+        <field name="weight_uom_id" ref="uom.product_uom_kgm" />
+        <field name="volume">2.5</field>
+        <field name="volume_uom_id" ref="uom.product_uom_cubic_meter" />
+        <field name="unloading_time">30</field>
+        <field
+            name="scheduled_date"
+            eval="(DateTime.now() + timedelta(days=1)).strftime('%Y-%m-%d 17:00:00')"
+        />
+        <field name="state">draft</field>
+    </record>
+
+    <record id="demo_tms_order_stop_optimizer_15" model="tms.order.stop">
+        <field name="order_id" ref="demo_tms_order_optimizer_4" />
+        <field name="sequence">20</field>
+        <field name="partner_id" ref="demo_partner_optimizer_15" />
+        <field name="weight">110.0</field>
+        <field name="weight_uom_id" ref="uom.product_uom_kgm" />
+        <field name="volume">2.3</field>
+        <field name="volume_uom_id" ref="uom.product_uom_cubic_meter" />
+        <field name="unloading_time">30</field>
+        <field
+            name="scheduled_date"
+            eval="(DateTime.now() + timedelta(days=2)).strftime('%Y-%m-%d 08:00:00')"
+        />
+        <field name="state">draft</field>
+    </record>
+
+    <record id="demo_tms_order_stop_optimizer_16" model="tms.order.stop">
+        <field name="order_id" ref="demo_tms_order_optimizer_4" />
+        <field name="sequence">30</field>
+        <field name="partner_id" ref="demo_partner_optimizer_16" />
+        <field name="weight">130.0</field>
+        <field name="weight_uom_id" ref="uom.product_uom_kgm" />
+        <field name="volume">2.7</field>
+        <field name="volume_uom_id" ref="uom.product_uom_cubic_meter" />
+        <field name="unloading_time">30</field>
+        <field
+            name="scheduled_date"
+            eval="(DateTime.now() + timedelta(days=2)).strftime('%Y-%m-%d 14:00:00')"
+        />
+        <field name="state">draft</field>
+    </record>
+
+    <!-- Stops for Multi-day Testing (Order 5: day 3) -->
+    <record id="demo_tms_order_stop_optimizer_17" model="tms.order.stop">
+        <field name="order_id" ref="demo_tms_order_optimizer_5" />
+        <field name="sequence">10</field>
+        <field name="partner_id" ref="demo_partner_optimizer_17" />
+        <field name="weight">105.0</field>
+        <field name="weight_uom_id" ref="uom.product_uom_kgm" />
+        <field name="volume">2.2</field>
+        <field name="volume_uom_id" ref="uom.product_uom_cubic_meter" />
+        <field name="unloading_time">30</field>
+        <field
+            name="scheduled_date"
+            eval="(DateTime.now() + timedelta(days=3)).strftime('%Y-%m-%d 09:00:00')"
+        />
+        <field name="state">draft</field>
+    </record>
+
+    <record id="demo_tms_order_stop_optimizer_18" model="tms.order.stop">
+        <field name="order_id" ref="demo_tms_order_optimizer_5" />
+        <field name="sequence">20</field>
+        <field name="partner_id" ref="demo_partner_optimizer_18" />
+        <field name="weight">115.0</field>
+        <field name="weight_uom_id" ref="uom.product_uom_kgm" />
+        <field name="volume">2.4</field>
+        <field name="volume_uom_id" ref="uom.product_uom_cubic_meter" />
+        <field name="unloading_time">30</field>
+        <field
+            name="scheduled_date"
+            eval="(DateTime.now() + timedelta(days=3)).strftime('%Y-%m-%d 10:00:00')"
+        />
+        <field name="state">draft</field>
+    </record>
+
+    <record id="demo_tms_order_stop_optimizer_19" model="tms.order.stop">
+        <field name="order_id" ref="demo_tms_order_optimizer_5" />
+        <field name="sequence">30</field>
+        <field name="partner_id" ref="demo_partner_optimizer_19" />
+        <field name="weight">125.0</field>
+        <field name="weight_uom_id" ref="uom.product_uom_kgm" />
+        <field name="volume">2.6</field>
+        <field name="volume_uom_id" ref="uom.product_uom_cubic_meter" />
+        <field name="unloading_time">30</field>
+        <field
+            name="scheduled_date"
+            eval="(DateTime.now() + timedelta(days=3)).strftime('%Y-%m-%d 11:00:00')"
+        />
+        <field name="state">draft</field>
+    </record>
+
+    <record id="demo_tms_order_stop_optimizer_20" model="tms.order.stop">
+        <field name="order_id" ref="demo_tms_order_optimizer_5" />
+        <field name="sequence">40</field>
+        <field name="partner_id" ref="demo_partner_optimizer_20" />
+        <field name="weight">140.0</field>
+        <field name="weight_uom_id" ref="uom.product_uom_kgm" />
+        <field name="volume">2.8</field>
+        <field name="volume_uom_id" ref="uom.product_uom_cubic_meter" />
+        <field name="unloading_time">30</field>
+        <field
+            name="scheduled_date"
+            eval="(DateTime.now() + timedelta(days=3)).strftime('%Y-%m-%d 12:00:00')"
+        />
+        <field name="state">draft</field>
+    </record>
+
+    <!-- Demo Route Optimizer Configuration -->
+    <record id="demo_route_optimizer_config" model="tms.route.optimizer.config">
+        <field name="name">Demo: Auto Optimization - São Paulo</field>
+        <field name="active">True</field>
+        <field name="team_id" ref="demo_team_route_optimizer" />
+        <field name="planning_mode">team</field>
+        <field name="max_stops_per_vehicle">8</field>
+        <field name="enable_multi_day">True</field>
+        <field name="planning_horizon_days">3</field>
+        <field name="days_ahead">3</field>
+        <field name="cron_hour">22</field>
+        <field name="cron_minute">0</field>
+    </record>
+
+    <!-- Demo Route Suggestions -->
+    <record id="demo_route_suggestion_1" model="tms.route.suggestion">
+        <field name="name">Route suggestion: OPT-VAN-001 - Tomorrow</field>
+        <field name="config_id" ref="demo_route_optimizer_config" />
+        <field name="state">suggested</field>
+        <field name="suggestion_date" eval="DateTime.now().strftime('%Y-%m-%d')" />
+        <field
+            name="planning_date"
+            eval="(DateTime.now() + timedelta(days=1)).strftime('%Y-%m-%d')"
+        />
+        <field name="vehicle_id" ref="demo_vehicle_optimizer_van_1" />
+        <field
+            name="stop_ids"
+            eval="[(6, 0, [
+            ref('demo_tms_order_stop_optimizer_1'),
+            ref('demo_tms_order_stop_optimizer_2'),
+            ref('demo_tms_order_stop_optimizer_3')
+        ])]"
+        />
+        <field name="total_distance">45.5</field>
+        <field name="total_cost">163.75</field>
+        <field name="total_weight">185.0</field>
+        <field name="total_volume">3.7</field>
+        <field
+            name="google_maps_url"
+        >https://www.google.com/maps/dir/?api=1&amp;origin=-23.6912741,-46.7982916&amp;destination=-23.6912741,-46.7982916</field>
+    </record>
+
+    <record id="demo_route_suggestion_2" model="tms.route.suggestion">
+        <field name="name">Route suggestion: OPT-VUC-001 - Tomorrow</field>
+        <field name="config_id" ref="demo_route_optimizer_config" />
+        <field name="state">suggested</field>
+        <field name="suggestion_date" eval="DateTime.now().strftime('%Y-%m-%d')" />
+        <field
+            name="planning_date"
+            eval="(DateTime.now() + timedelta(days=1)).strftime('%Y-%m-%d')"
+        />
+        <field name="vehicle_id" ref="demo_vehicle_optimizer_vuc_1" />
+        <field
+            name="stop_ids"
+            eval="[(6, 0, [
+            ref('demo_tms_order_stop_optimizer_4'),
+            ref('demo_tms_order_stop_optimizer_5'),
+            ref('demo_tms_order_stop_optimizer_6')
+        ])]"
+        />
+        <field name="total_distance">38.2</field>
+        <field name="total_cost">145.50</field>
+        <field name="total_weight">180.0</field>
+        <field name="total_volume">3.5</field>
+        <field
+            name="google_maps_url"
+        >https://www.google.com/maps/dir/?api=1&amp;origin=-23.6912741,-46.7982916&amp;destination=-23.6912741,-46.7982916</field>
+    </record>
+
+    <record id="demo_route_suggestion_3" model="tms.route.suggestion">
+        <field name="name">Route suggestion: OPT-VAN-002 - Day After Tomorrow</field>
+        <field name="config_id" ref="demo_route_optimizer_config" />
+        <field name="state">approved</field>
+        <field
+            name="suggestion_date"
+            eval="(DateTime.now() + timedelta(days=-1)).strftime('%Y-%m-%d')"
+        />
+        <field
+            name="planning_date"
+            eval="(DateTime.now() + timedelta(days=2)).strftime('%Y-%m-%d')"
+        />
+        <field name="vehicle_id" ref="demo_vehicle_optimizer_van_2" />
+        <field
+            name="stop_ids"
+            eval="[(6, 0, [
+            ref('demo_tms_order_stop_optimizer_7'),
+            ref('demo_tms_order_stop_optimizer_8')
+        ])]"
+        />
+        <field name="total_distance">52.3</field>
+        <field name="total_cost">180.75</field>
+        <field name="total_weight">135.0</field>
+        <field name="total_volume">2.7</field>
+        <field
+            name="google_maps_url"
+        >https://www.google.com/maps/dir/?api=1&amp;origin=-23.6912741,-46.7982916&amp;destination=-23.6912741,-46.7982916</field>
     </record>
 </odoo>

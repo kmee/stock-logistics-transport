@@ -209,6 +209,28 @@ class TMSRouteOptimizer(models.TransientModel):
             else:
                 wizard.pending_order_ids = self.env["tms.order"]
 
+    def _prepare_merge_stops(self):
+        """
+        Prepare stops for merge mode: collect stops from selected pending orders
+        and combine with new stops.
+        """
+        if not self.selected_pending_order_ids:
+            return
+
+        # Collect stops from selected pending orders
+        existing_stops = self.env["tms.order.stop"]
+        for order in self.selected_pending_order_ids:
+            # Reset stops to draft state so they can be re-optimized
+            order.stop_ids.filtered(lambda s: s.state == "scheduled").write(
+                {"state": "draft"}
+            )
+            # Collect all draft stops from these orders
+            existing_stops |= order.stop_ids.filtered(lambda s: s.state == "draft")
+
+        # Combine with new stops
+        all_stops = existing_stops | self.delivery_stop_ids
+        self.delivery_stop_ids = all_stops
+
     def _validate_optimization_data(self):
         """Validate data before optimization"""
         if not self.delivery_stop_ids:
@@ -517,6 +539,10 @@ class TMSRouteOptimizer(models.TransientModel):
 
         try:
             start_time = time.time()
+
+            # Handle merge mode: collect stops from pending orders
+            if self.recalculation_mode == "merge" and self.include_pending_orders:
+                self._prepare_merge_stops()
 
             self._validate_optimization_data()
 
